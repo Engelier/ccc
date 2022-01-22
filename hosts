@@ -1,4 +1,8 @@
 all:
-    hosts:
-        sandboxapicdc.cisco.com:
-            ansible_connection: local
+    children:
+        apics:
+            hosts:
+                sandboxapicdc.cisco.com
+            vars:
+                ansible_fqdn: sandboxapicdc.cisco.com
+                ansible_connection: local
