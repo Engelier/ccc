@@ -15,6 +15,7 @@
           3362
         state: query
       register: tenant_query
+      delegate_to: localhost
 
     - name: Query result
       debug:
