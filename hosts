@@ -2,7 +2,15 @@ all:
     children:
         apics:
             hosts:
-                sandboxapicdc.cisco.com
+                sandboxapicdc.cisco.com:
+                    aci_config: inputs/challenge_config.yml
+                    aci_username: admin
+                    aci_password: !vault |
+                      $ANSIBLE_VAULT;1.1;AES256
+                      61623531356530636166643039363231323964336531366563303636363736363734633530343066
+                      3338363133313831393637633964386265663132366134620a323638316330613839393837343836
+                      33343836663631393439393838353134633863373339303135323832316234623731356663626134
+                      6233646435613435330a303737653538663130306331396165356661303131356462613436343136
+                      3362
             vars:
-                ansible_fqdn: sandboxapicdc.cisco.com
                 ansible_connection: local
