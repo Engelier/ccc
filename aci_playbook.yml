@@ -1,6 +1,6 @@
 ---
 
-- hosts: apics
+- hosts: all
   gather_facts: no
   tasks:
     - name: Query current tenants
