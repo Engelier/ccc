@@ -1,2 +1,4 @@
-[apics]
-sandboxapicdc.cisco.com
+all:
+    hosts:
+        sandboxapicdc.cisco.com:
+            ansible_connection: local

@@ -1,6 +1,7 @@
 ---
 
 - hosts: apics
+  gather_facts: no
   tasks:
     - name: Query current tenants
       cisco.aci.aci_tenant:
@@ -15,7 +16,6 @@
           3362
         state: query
       register: tenant_query
-      delegate_to: localhost
 
     - name: Query result
       debug:
