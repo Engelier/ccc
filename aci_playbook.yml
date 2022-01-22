@@ -5,7 +5,7 @@
   tasks:
     - name: Query current tenants
       cisco.aci.aci_tenant:
-        host: "{{ ansible_facts.ansible_fqdn }}"
+        host: "{{ ansible_fqdn }}"
         username: admin
         password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
