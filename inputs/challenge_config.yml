@@ -1,0 +1,65 @@
+---
+
+tenants:
+  - name: TN_prod
+    description: "All production related objects"
+    application_profiles:
+      - name: AP_shop
+        description: "The app_profile for our webshop"
+        epgs:
+          - name: EPG_webserver
+            bd: BD_webserver
+            contracts:
+              - name: C_internet
+                type: provider
+              - name: C_appserver
+                type: consumer
+          - name: EPG_appserver
+            bd: BD_appserver
+            contracts:
+              - name: C_appserver
+                type: provider
+              - name: C_database
+                type: consumer
+          - name: EPG_database
+            bd: BD_database
+            contracts:
+              - name: C_database
+                type: provider
+    bridge_domains:
+      - name: BD_webserver
+        subnets:
+          - name: 20.0.1.1
+            mask: 24
+            scope: public
+        vrf: datacenter
+      - name: BD_appserver
+        subnets:
+          - name: 10.0.1.1
+            mask: 24
+            scope: private
+        vrf: datacenter
+      - name: BD_database
+        subnets:
+          - name: 10.0.2.1
+            mask: 24
+            scope: private
+        vrf: datacenter
+    vrfs:
+      - name: datacenter
+    contracts:
+      - name: C_internet
+        scope: tenant
+        subject:
+          - name: internet
+            filter: default
+      - name: C_appserver
+        scope: tenant
+        subject:
+          - name: internet
+            filter: default
+      - name: C_database
+        scope: tenant
+        subject:
+          - name: internet
+            filter: default
