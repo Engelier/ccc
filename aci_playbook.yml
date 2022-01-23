@@ -3,7 +3,7 @@
 - hosts: apics
   gather_facts: no
   module_defaults:
-    # Group defaults for collections are not available for ansible <=2.12
+    # Group defaults for collections are not available for ansible <2.12
     # and also cisco.aci doesn't define any groups anyway (yet).
     # While defining module defaults for every module being used exactly once is rather pointless
     # it makes the module code more readable and also things may change and this makes adapting easier.
@@ -12,11 +12,15 @@
       username: "{{ aci_username }}"
       password: "{{ aci_password }}"
   tasks:
-    - name: Query current tenants
-      cisco.aci.aci_tenant:
-        state: query
-      register: tenant_query
+    - name: Validate/Preprocess config input
+      command: process_input.py "{{ aci_config }}"
+      delegate_to: localhost
+      register: aci_processed_config
 
-    - name: Query result
+    - name: Register preprocessed config as fact
+      set_fact:
+        aci_fact_config: "{{ aci_processed_config.stdout }}"
+
+    - name: Valid Config
       debug:
-        var: tenant_query
+        var: aci_fact_config
