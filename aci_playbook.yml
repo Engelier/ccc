@@ -7,6 +7,10 @@
     # and also cisco.aci doesn't define any groups anyway (yet).
     # While defining module defaults for every module being used exactly once is rather pointless
     # it makes the module code more readable and also things may change and this makes adapting easier.
+    cisco.aci.aci_ap:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
     cisco.aci.aci_bd:
       host: "{{ inventory_hostname }}"
       username: "{{ aci_username }}"
@@ -16,6 +20,22 @@
       username: "{{ aci_username }}"
       password: "{{ aci_password }}"
     cisco.aci.aci_contract:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_contract_subject:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_contract_subject_to_filter:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_epg:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_epg_to_contract:
       host: "{{ inventory_hostname }}"
       username: "{{ aci_username }}"
       password: "{{ aci_password }}"
@@ -76,6 +96,23 @@
         state: present
       with_items: "{{ aci_fact_config.contracts }}"
 
+    - name: Create Contract Subjects
+      cisco.aci.aci_contract_subject:
+        name: "{{ item.subject }}"
+        tenant: "{{ item.tenant }}"
+        contract: "{{ item.contract }}"
+        state: present
+      with_items: "{{ aci_fact_config.contract_subjects }}"
+
+    - name: Bind Contract Subjects to Filters
+      cisco.aci.aci_contract_subject_to_filter:
+        tenant: "{{ item.tenant }}"
+        contract: "{{ item.contract }}"
+        subject: "{{ item.subject }}"
+        filter: "{{ item.filter }}"
+        state: present
+      with_items: "{{ aci_fact_config.contract_subject_to_filters }}"
+
     - name: Create Bridge Domains
       cisco.aci.aci_bd:
         name: "{{ item.bd }}"
@@ -92,3 +129,30 @@
         mask: "{{ item.mask }}"
         state: present
       with_items: "{{ aci_fact_config.bridge_domain_subnets }}"
+
+    - name: Create Application Profiles
+      cisco.aci.aci_ap:
+        tenant: "{{ item.tenant }}"
+        ap: "{{ item.ap }}"
+        description: "{{ item.description }}"
+        state: present
+      with_items: "{{ aci_fact_config.application_profiles }}"
+
+    - name: Create Endpoint Groups
+      cisco.aci.aci_epg:
+        tenant: "{{ item.tenant }}"
+        ap: "{{ item.ap }}"
+        bd: "{{ item.bd }}"
+        epg: "{{ item.epg }}"
+        state: present
+      with_items: "{{ aci_fact_config.endpoint_groups }}"
+
+    - name: Bind Endpoint Groups to Contracts
+      cisco.aci.aci_epg_to_contract:
+        tenant: "{{ item.tenant }}"
+        ap: "{{ item.ap }}"
+        epg: "{{ item.epg }}"
+        contract: "{{ item.contract }}"
+        contract_type: "{{ item.type }}"
+        state: present
+      with_items: "{{ aci_fact_config.endpoint_group_contracts }}"

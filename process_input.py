@@ -147,7 +147,7 @@ for tenant in parsed_config['tenants']:
             fail_on_missing(epg, 'contracts', 'epgs', tenant_name, application_profile_name, epg_name)
             fail_on_present(cache_epg, epg_name, 'epgs', tenant_name, application_profile_name)
             cache_epg.append(epg_name)
-            ansible_config['endpoint_groups'].append({'tenant': tenant_name, 'ap': application_profile_name, 'epg': epg_name})
+            ansible_config['endpoint_groups'].append({'tenant': tenant_name, 'ap': application_profile_name, 'bd': epg_bd, 'epg': epg_name})
             for contract in epg['contracts']:
                 fail_on_missing(contract, 'name', 'ap_contract', tenant_name, application_profile_name, epg_name)
                 contract_name = contract['name']
