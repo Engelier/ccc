@@ -13,9 +13,11 @@
       password: "{{ aci_password }}"
   tasks:
     - name: Validate/Preprocess config input
-      command: process_input.py "{{ aci_config }}"
-      delegate_to: localhost
+      command: "./process_input.py {{ aci_config }}"
       register: aci_processed_config
+      changed_when: False
+      failed_when: "aci_processed_config.rc != 0"
+      delegate_to: localhost
 
     - name: Register preprocessed config as fact
       set_fact:
@@ -24,3 +26,10 @@
     - name: Valid Config
       debug:
         var: aci_fact_config
+
+    - name: Create Tenants
+      cisco.aci.aci_tenant:
+        name: "{{ item.tenant }}"
+        description: "{{ item.description }}"
+        state: present
+      with_items: "{{ aci_fact_config.tenants }}"
