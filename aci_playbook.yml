@@ -11,6 +11,10 @@
       host: "{{ inventory_hostname }}"
       username: "{{ aci_username }}"
       password: "{{ aci_password }}"
+    cisco.aci.aci_vrf:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
   tasks:
     - name: Validate/Preprocess config input
       command: "./process_input.py {{ aci_config }}"
@@ -33,3 +37,10 @@
         description: "{{ item.description }}"
         state: present
       with_items: "{{ aci_fact_config.tenants }}"
+
+    - name: Create VRFs
+      cisco.aci.aci_vrf:
+        name: "{{ item.vrf }}"
+        tenant: "{{ item.tenant }}"
+        state: present
+      with_items: "{{ aci_fact_config.vrfs }}"
