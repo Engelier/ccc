@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import ipaddress
 import sys
 import yaml
 from typing import Union
@@ -66,7 +65,11 @@ for tenant in parsed_config['tenants']:
     fail_on_missing(tenant, 'contracts', 'tenant', tenant_name)
     fail_on_present(cache_tenants, tenant_name, 'tenants')
     cache_tenants.append(tenant_name)
-    ansible_config['tenants'].append({'tenant': tenant_name, 'description': tenant['description']})
+    tenant_config = {
+        'tenant': tenant_name,
+        'description': tenant['description'],
+    }
+    ansible_config['tenants'].append(tenant_config)
 
     cache_vrfs = []
     for vrf in tenant['vrfs']:
@@ -74,7 +77,11 @@ for tenant in parsed_config['tenants']:
         vrf_name = vrf['name']
         fail_on_present(cache_vrfs, vrf_name, tenant_name)
         cache_vrfs.append(vrf_name)
-        ansible_config['vrfs'].append({'tenant': tenant_name, 'vrf': vrf_name})
+        vrf_config = {
+            'tenant': tenant_name,
+            'vrf': vrf_name,
+        }
+        ansible_config['vrfs'].append(vrf_config)
 
     cache_contracts = []
     cache_filters = []
@@ -83,24 +90,40 @@ for tenant in parsed_config['tenants']:
         contract_name = contract['name']
         fail_on_missing(contract, 'scope', 'contract', tenant_name, contract_name)
         contract_scope = contract['scope']
-        fail_on_missing(CONTRACT_SCOPES, contract_scope, 'valid contract scopes', tenant_name, contract_name)
+        fail_on_missing(CONTRACT_SCOPES, contract_scope, 'valid contract scopes',
+                        tenant_name, contract_name)
         fail_on_missing(contract, 'subject', 'contract', tenant_name, contract_name)
         fail_on_present(cache_contracts, contract_name, tenant_name)
         cache_contracts.append(contract_name)
-        ansible_config['contracts'].append({'tenant': tenant_name, 'contract': contract_name, 'scope': contract['scope']})
+        contract_config = {
+            'tenant': tenant_name,
+            'contract': contract_name,
+            'scope': contract['scope'],
+        }
+        ansible_config['contracts'].append(contract_config)
 
         cache_subjects = []
         for subject in contract['subject']:
             fail_on_missing(subject, 'name', 'subject', tenant_name, contract_name)
             subject_name = subject['name']
-            fail_on_missing(subject, 'filter', 'subject', tenant_name, contract_name, subject_name)
+            fail_on_missing(subject, 'filter', 'subject',
+                            tenant_name, contract_name, subject_name)
             filter_name = subject['filter']
             fail_on_present(cache_subjects, subject_name, tenant_name, contract_name)
             cache_subjects.append(subject_name)
-            ansible_config['contract_subjects'].append({'tenant': tenant_name, 'subject': subject_name, 'contract': contract_name})
-            ansible_config['contract_subject_to_filters'].append({'tenant': tenant_name, 'contract': contract_name, 'subject': subject_name, 'filter': filter_name})
+            subject_config = {
+                'tenant': tenant_name,
+                'subject': subject_name,
+                'contract': contract_name,
+                'filter': filter_name,
+            }
+            ansible_config['contract_subjects'].append(subject_config)
             if filter_name not in cache_filters:
-                ansible_config['filters'].append({'tenant': tenant_name, 'filter': filter_name})
+                filter_config = {
+                    'tenant': tenant_name,
+                    'filter': filter_name,
+                }
+                ansible_config['filters'].append(subject_config)
                 cache_filters.append(filter_name)
 
     cache_bd = []
@@ -114,48 +137,92 @@ for tenant in parsed_config['tenants']:
         fail_on_missing(cache_vrfs, vrf_name, 'vrfs', tenant_name, bd_name)
         fail_on_present(cache_bd, bd_name, tenant_name)
         cache_bd.append(bd_name)
-        ansible_config['bridge_domains'].append({'tenant': tenant_name, 'bd': bd_name, 'vrf': vrf_name})
+        bd_config = {
+            'tenant': tenant_name,
+            'bd': bd_name,
+            'vrf': vrf_name,
+        }
+        ansible_config['bridge_domains'].append(bd_config)
         for subnet in bridge_domain['subnets']:
             fail_on_missing(subnet, 'name', 'subnet', tenant_name, bd_name)
             subnet_gateway = subnet['name']
-            fail_on_missing(subnet, 'mask', 'subnet', tenant_name, bd_name, subnet_gateway)
+            fail_on_missing(subnet, 'mask', 'subnet',
+                            tenant_name, bd_name, subnet_gateway)
             subnet_mask = subnet['mask']
             subnet_name = "{}/{}".format(subnet_gateway, subnet_mask)
-            fail_on_missing(subnet, 'scope', 'subnet', tenant_name, bd_name, subnet_name)
+            fail_on_missing(subnet, 'scope', 'subnet',
+                            tenant_name, bd_name, subnet_name)
             subnet_scope = subnet['scope']
-            fail_on_missing(SUBNET_SCOPES, subnet_scope, 'valid subnet scopes', tenant_name, bd_name, subnet_name)
+            fail_on_missing(SUBNET_SCOPES, subnet_scope, 'valid subnet scopes',
+                            tenant_name, bd_name, subnet_name)
             fail_on_present(cache_subnets, subnet_name, tenant_name, bd_name)
             cache_subnets.append(subnet_name)
-            ansible_config['bridge_domain_subnets'].append({'tenant': tenant_name, 'bd': bd_name, 'gateway': subnet_gateway, 'mask': subnet_mask})
+            subnet_config = {
+                'tenant': tenant_name,
+                'bd': bd_name,
+                'gateway': subnet_gateway,
+                'mask': subnet_mask,
+                'scope': subnet_scope,
+            }
+            ansible_config['bridge_domain_subnets'].append(subnet_config)
 
     cache_ap = []
     for application_profile in tenant['application_profiles']:
         fail_on_missing(application_profile, 'name', 'application_profiles', tenant_name)
         application_profile_name = application_profile['name']
-        fail_on_missing(application_profile, 'description', 'application_profiles', tenant_name, application_profile_name)
-        fail_on_missing(application_profile, 'epgs', 'application_profiles', tenant_name, application_profile_name)
+        fail_on_missing(application_profile, 'description', 'application_profiles',
+                        tenant_name, application_profile_name)
+        fail_on_missing(application_profile, 'epgs', 'application_profiles',
+                        tenant_name, application_profile_name)
         fail_on_present(cache_ap, application_profile_name, tenant_name)
         cache_ap.append(application_profile_name)
-        ansible_config['application_profiles'].append({'tenant': tenant_name, 'ap': application_profile_name, 'description': application_profile['description']})
+        ap_config = {
+            'tenant': tenant_name,
+            'ap': application_profile_name,
+            'description': application_profile['description'],
+        }
+        ansible_config['application_profiles'].append(ap_config)
+
         cache_epg = []
         for epg in application_profile['epgs']:
             fail_on_missing(epg, 'name', 'epgs', tenant_name, application_profile_name)
             epg_name = epg['name']
             fail_on_missing(epg, 'bd', 'epgs', tenant_name, application_profile_name, epg_name)
             epg_bd = epg['bd']
-            fail_on_missing(cache_bd, epg_bd, 'bridge_domains', tenant_name, application_profile_name, epg_name)
-            fail_on_missing(epg, 'contracts', 'epgs', tenant_name, application_profile_name, epg_name)
-            fail_on_present(cache_epg, epg_name, 'epgs', tenant_name, application_profile_name)
+            fail_on_missing(cache_bd, epg_bd, 'bridge_domains',
+                            tenant_name, application_profile_name, epg_name)
+            fail_on_missing(epg, 'contracts', 'epgs',
+                            tenant_name, application_profile_name, epg_name)
+            fail_on_present(cache_epg, epg_name, 'epgs',
+                            tenant_name, application_profile_name)
             cache_epg.append(epg_name)
-            ansible_config['endpoint_groups'].append({'tenant': tenant_name, 'ap': application_profile_name, 'bd': epg_bd, 'epg': epg_name})
+            epg_config = {
+                'tenant': tenant_name,
+                'ap': application_profile_name,
+                'bd': epg_bd,
+                'epg': epg_name,
+            }
+            ansible_config['endpoint_groups'].append(epg_config)
+
             for contract in epg['contracts']:
-                fail_on_missing(contract, 'name', 'ap_contract', tenant_name, application_profile_name, epg_name)
+                fail_on_missing(contract, 'name', 'ap_contract',
+                                tenant_name, application_profile_name, epg_name)
                 contract_name = contract['name']
-                fail_on_missing(cache_contracts, contract_name, 'contracts', tenant_name, application_profile_name, epg_name)
-                fail_on_missing(contract, 'type', 'ap_contract', tenant_name, application_profile_name, epg_name, contract_name)
+                fail_on_missing(cache_contracts, contract_name, 'contracts',
+                                tenant_name, application_profile_name, epg_name)
+                fail_on_missing(contract, 'type', 'ap_contract',
+                                tenant_name, application_profile_name, epg_name, contract_name)
                 contract_type = contract['type']
-                fail_on_missing(CONTRACT_TYPES, contract_type, 'valid contract types', tenant_name, application_profile_name, epg_name, contract_name)
-                ansible_config['endpoint_group_contracts'].append({'tenant': tenant_name, 'ap': application_profile_name, 'epg': epg_name, 'contract': contract_name, 'type': contract_type})
+                fail_on_missing(CONTRACT_TYPES, contract_type, 'valid contract types',
+                                tenant_name, application_profile_name, epg_name, contract_name)
+                epg_contract_config = {
+                    'tenant': tenant_name,
+                    'ap': application_profile_name,
+                    'epg': epg_name,
+                    'contract': contract_name,
+                    'type': contract_type,
+                }
+                ansible_config['endpoint_group_contracts'].append(epg_contract_config)
 
 
 print(ansible_config)

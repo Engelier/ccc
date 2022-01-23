@@ -111,7 +111,7 @@
         subject: "{{ item.subject }}"
         filter: "{{ item.filter }}"
         state: present
-      with_items: "{{ aci_fact_config.contract_subject_to_filters }}"
+      with_items: "{{ aci_fact_config.contract_subjects }}"
 
     - name: Create Bridge Domains
       cisco.aci.aci_bd:
@@ -127,6 +127,7 @@
         bd: "{{ item.bd }}"
         gateway: "{{ item.gateway }}"
         mask: "{{ item.mask }}"
+        scope: "{{ item.scope }}"
         state: present
       with_items: "{{ aci_fact_config.bridge_domain_subnets }}"
 
