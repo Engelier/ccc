@@ -7,6 +7,22 @@
     # and also cisco.aci doesn't define any groups anyway (yet).
     # While defining module defaults for every module being used exactly once is rather pointless
     # it makes the module code more readable and also things may change and this makes adapting easier.
+    cisco.aci.aci_bd:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_bd_subnet:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_contract:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+    cisco.aci.aci_filter:
+      host: "{{ inventory_hostname }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
     cisco.aci.aci_tenant:
       host: "{{ inventory_hostname }}"
       username: "{{ aci_username }}"
@@ -44,3 +60,36 @@
         tenant: "{{ item.tenant }}"
         state: present
       with_items: "{{ aci_fact_config.vrfs }}"
+
+    - name: Create Filters
+      cisco.aci.aci_filter:
+        name: "{{ item.filter }}"
+        tenant: "{{ item.tenant }}"
+        state: present
+      with_items: "{{ aci_fact_config.filters }}"
+
+    - name: Create Contracts
+      cisco.aci.aci_contract:
+        name: "{{ item.contract }}"
+        tenant: "{{ item.tenant }}"
+        scope: "{{ item.scope }}"
+        state: present
+      with_items: "{{ aci_fact_config.contracts }}"
+
+    - name: Create Bridge Domains
+      cisco.aci.aci_bd:
+        name: "{{ item.bd }}"
+        tenant: "{{ item.tenant }}"
+        vrf: "{{ item.vrf }}"
+        state: present
+      with_items: "{{ aci_fact_config.bridge_domains }}"
+
+    - name: Create Bridge Domain Subnets
+      cisco.aci.aci_bd_subnet:
+        name: "{{ item.subnet }}"
+        tenant: "{{ item.tenant }}"
+        bd: "{{ item.bd }}"
+        gateway: "{{ item.gateway }}"
+        mask: "{{ item.mask }}"
+        state: present
+      with_items: "{{ aci_fact_config.bridge_domain_subnets }}"
