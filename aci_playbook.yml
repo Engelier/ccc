@@ -86,7 +86,6 @@
 
     - name: Create Bridge Domain Subnets
       cisco.aci.aci_bd_subnet:
-        name: "{{ item.subnet }}"
         tenant: "{{ item.tenant }}"
         bd: "{{ item.bd }}"
         gateway: "{{ item.gateway }}"

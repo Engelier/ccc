@@ -120,18 +120,13 @@ for tenant in parsed_config['tenants']:
             subnet_gateway = subnet['name']
             fail_on_missing(subnet, 'mask', 'subnet', tenant_name, bd_name, subnet_gateway)
             subnet_mask = subnet['mask']
-            try:
-                subnet_name = str(ipaddress.ip_network("{}/{}".format(subnet_gateway, subnet['mask']), False))
-            except ValueError:
-                print("ERROR: invalid subnet/mask:", subnet_gateway, "/", subnet_mask, "in bridge_domain", bd_name)
-                sys.exit(1)
-
+            subnet_name = "{}/{}".format(subnet_gateway, subnet_mask)
             fail_on_missing(subnet, 'scope', 'subnet', tenant_name, bd_name, subnet_name)
             subnet_scope = subnet['scope']
             fail_on_missing(SUBNET_SCOPES, subnet_scope, 'valid subnet scopes', tenant_name, bd_name, subnet_name)
             fail_on_present(cache_subnets, subnet_name, tenant_name, bd_name)
             cache_subnets.append(subnet_name)
-            ansible_config['bridge_domain_subnets'].append({'tenant': tenant_name, 'bd': bd_name, 'subnet': subnet_name, 'gateway': subnet_gateway, 'mask': subnet_mask})
+            ansible_config['bridge_domain_subnets'].append({'tenant': tenant_name, 'bd': bd_name, 'gateway': subnet_gateway, 'mask': subnet_mask})
 
     cache_ap = []
     for application_profile in tenant['application_profiles']:
